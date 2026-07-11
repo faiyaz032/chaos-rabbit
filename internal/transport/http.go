@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"time"
 
+	"github.com/faiyaz032/chaos-rabbit/internal/chaos"
 	"github.com/faiyaz032/chaos-rabbit/internal/config"
 )
 
@@ -26,8 +28,9 @@ func (h *HTTPTransport) Start(ctx context.Context) error {
 	}
 
 	server := &http.Server{
-		Addr:    h.config.Listen,
-		Handler: proxy,
+		Addr: h.config.Listen,
+		// the latency will come from config
+		Handler: chaos.Chain(proxy, chaos.Latency(2*time.Second)),
 	}
 
 	go func() {
