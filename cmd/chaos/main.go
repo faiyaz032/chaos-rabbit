@@ -20,7 +20,7 @@ func main() {
 
 	e := engine.New()
 
-	httpTransport := transport.NewHTTPTransport(cfg.HTTP)
+	httpTransport := transport.NewHTTPTransport(cfg.HTTP, cfg.Chaos)
 	e.Register(httpTransport)
 	e.Run(ctx)
 }

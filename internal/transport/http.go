@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"time"
 
 	"github.com/faiyaz032/chaos-rabbit/internal/chaos"
 	"github.com/faiyaz032/chaos-rabbit/internal/config"
@@ -13,11 +12,13 @@ import (
 
 type HTTPTransport struct {
 	config config.HTTPConfig
+	chaos  []config.ChaosConfig
 }
 
-func NewHTTPTransport(cfg config.HTTPConfig) *HTTPTransport {
+func NewHTTPTransport(cfg config.HTTPConfig, chaosCfg []config.ChaosConfig) *HTTPTransport {
 	return &HTTPTransport{
 		config: cfg,
+		chaos:  chaosCfg,
 	}
 }
 
@@ -27,10 +28,12 @@ func (h *HTTPTransport) Start(ctx context.Context) error {
 		return err
 	}
 
+	middlewares, err := chaos.Build(h.chaos)
+
 	server := &http.Server{
 		Addr: h.config.Listen,
 		// the latency will come from config
-		Handler: chaos.Chain(proxy, chaos.Latency(2*time.Second)),
+		Handler: chaos.Chain(proxy, middlewares...),
 	}
 
 	go func() {
